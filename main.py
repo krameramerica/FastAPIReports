@@ -9,11 +9,8 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    cnxn = pyodbc.connect(CONNECTION)
-    cursor = cnxn.cursor()
-    cursor.execute(get_all_tracking)
-    data = [(item[0]) for item in cursor.fetchall()]
-    return data
+
+    # return data
     return {"message": "Hello World"}
 
 
