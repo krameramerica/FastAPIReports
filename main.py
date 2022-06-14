@@ -1,10 +1,23 @@
 from fastapi import FastAPI
 import pyodbc
-from config import CONNECTION, get_all_tracking
+import os
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
 app = FastAPI()
+
+CONNECTION = (
+    "DRIVER="
+    + os.getenv("DRIVER_KA_SERVER")
+    + ";SERVER="
+    + os.getenv("SERVER_KA_SERVER")
+    + ";PORT=1433;DATABASE="
+    + os.getenv("DB_KA_SERVER")
+    + ";UID="
+    + os.getenv("USER_KA_SERVER")
+    + ";PWD="
+    + os.getenv("PW_KA_SERVER")
+)
 
 
 @app.get("/")
