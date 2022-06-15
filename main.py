@@ -1,10 +1,10 @@
-from fastapi import FastAPI
-import pyodbc
-import os
 from datetime import date
 from dateutil.relativedelta import relativedelta
-
-app = FastAPI()
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from passlib.context import CryptContext
+import os
+import pyodbc
 
 CONNECTION = (
     "DRIVER="
@@ -19,12 +19,42 @@ CONNECTION = (
     + os.getenv("PW_KA_SERVER")
 )
 
+app = FastAPI()
+
+security = HTTPBasic()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 @app.get("/")
 async def root():
-
-    # return data
     return {"message": "Hello World"}
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+    cnxn = pyodbc.connect(CONNECTION)
+    cursor = cnxn.cursor()
+    user = cursor.execute(
+        "SELECT * FROM [User] WHERE Username = ?", credentials.username
+    ).fetchone()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+    if not verify_password(credentials.password, user[1]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return {"Authorized": True}
 
 
 @app.get("/purchase-order/totals/")
@@ -33,6 +63,7 @@ async def get_totals(
     sort: str = "DESC",
     date_start: str = date.today() + relativedelta(months=-3),
     date_end: str = date.today(),
+    auth: str = Depends(authenticate),
 ):
     cnxn = pyodbc.connect(CONNECTION)
     cursor = cnxn.cursor()
