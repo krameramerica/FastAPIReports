@@ -1,3 +1,5 @@
+import uvicorn
+
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -25,11 +27,6 @@ security = HTTPBasic()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -41,20 +38,19 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
         "SELECT * FROM [User] WHERE Username = ?", credentials.username
     ).fetchone()
 
-    if not user:
+    if not user or not verify_password(credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
 
-    if not verify_password(credentials.password, user[1]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
     return {"Authorized": True}
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
 
 @app.get("/purchase-order/totals/")
@@ -82,3 +78,7 @@ async def get_totals(
         )
     data = [{"sku": item[0], "qty": item[1]} for item in cursor.fetchall()]
     return data
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
