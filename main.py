@@ -7,6 +7,12 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from passlib.context import CryptContext
 import os
 import pyodbc
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "https://fast-api-reports.herokuapp.com/",
+]
+
 
 CONNECTION = (
     "DRIVER="
@@ -35,6 +41,14 @@ CONNECTION2 = (
 )
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 security = HTTPBasic()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
