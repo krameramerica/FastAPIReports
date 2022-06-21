@@ -40,7 +40,9 @@ app = FastAPI()
 
 
 origins = [
+    "https://fast-api-reports.herokuapp.com",
     "https://fast-api-reports.herokuapp.com/",
+    "http://fast-api-reports.herokuapp.com",
     "http://fast-api-reports.herokuapp.com/",
     "http://localhost:3000/",
     "http://localhost",
@@ -49,7 +51,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
