@@ -9,13 +9,6 @@ import os
 import pyodbc
 from fastapi.middleware.cors import CORSMiddleware
 
-origins = [
-    "https://fast-api-reports.herokuapp.com/",
-    "http://fast-api-reports.herokuapp.com/",
-    "http://localhost:3000/",
-    "http://localhost",
-]
-
 
 CONNECTION = (
     "DRIVER="
@@ -45,9 +38,18 @@ CONNECTION2 = (
 
 app = FastAPI()
 
+
+origins = [
+    "https://fast-api-reports.herokuapp.com/",
+    "http://fast-api-reports.herokuapp.com/",
+    "http://localhost:3000/",
+    "http://localhost",
+]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
